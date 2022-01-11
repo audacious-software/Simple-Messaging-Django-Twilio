@@ -17,5 +17,5 @@ PyNaCl==1.4.0
 pytz==2021.3
 requests==2.26.0
 twilio==6.63.2; python_version < '3.0'
-twilio==7.0.0; python_version >= '3.0'
+twilio==7.4.0; python_version >= '3.0'
 

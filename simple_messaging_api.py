@@ -27,7 +27,10 @@ def process_outgoing_message(outgoing_message):
         transmission_metadata = {}
 
         if outgoing_message.transmission_metadata is not None:
-            transmission_metadata = json.loads(outgoing_message.transmission_metadata)
+            try:
+                transmission_metadata = json.loads(outgoing_message.transmission_metadata)
+            except ValueError:
+                transmission_metadata = {}
 
         twilio_message = None
 
