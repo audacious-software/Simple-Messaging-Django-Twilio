@@ -41,7 +41,9 @@ jobs:
             mv ../simple_messaging_twilio sm
             cd sm
             git clone https://github.com/audacious-software/Quicksilver-Django.git quicksilver
+            pip install -r quicksilver/requirements.txt --progress-bar off
             git clone https://github.com/audacious-software/Simple-Messaging-Django.git simple_messaging
+            pip install -r simple_messaging/requirements.txt --progress-bar off
             cp simple_messaging_twilio/circle_settings.py sm/settings.py
             cp simple_messaging_twilio/circle_urls.py sm/urls.py
             python manage.py migrate
@@ -91,7 +93,9 @@ jobs:
             mv ../simple_messaging_twilio sm
             cd sm
             git clone https://github.com/audacious-software/Quicksilver-Django.git quicksilver
+            pip install -r quicksilver/requirements.txt --progress-bar off
             git clone https://github.com/audacious-software/Simple-Messaging-Django.git simple_messaging
+            pip install -r simple_messaging/requirements.txt --progress-bar off
             cp simple_messaging_twilio/circle_settings.py sm/settings.py
             cp simple_messaging_twilio/circle_urls.py sm/urls.py
             python manage.py migrate
