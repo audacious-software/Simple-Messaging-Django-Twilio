@@ -15,7 +15,7 @@ SECRET_KEY = 'foobar' # nosec
 DEBUG = False
 ADMINS = [('Chris Karr', 'chris@audacious-software.com')]
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['example.com']
 
 # Application definition
 
@@ -103,3 +103,4 @@ SIMPLE_MESSAGING_TWILIO_AUTH_TOKEN = 'changeme' # nosec
 SIMPLE_MESSAGING_TWILIO_PHONE_NUMBER = '+15556667777'
 
 SIMPLE_MESSAGING_COUNTRY_CODE = 'US'
+SIMPLE_MESSAGING_MEDIA_FILE_FOLDER
