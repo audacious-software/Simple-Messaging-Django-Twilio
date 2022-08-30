@@ -95,8 +95,13 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
+SILENCED_SYSTEM_CHECKS = ['simple_messaging.W002']
+
 STATIC_URL = '/static/'
 STATIC_ROOT = 'static'
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = str(BASE_DIR) + '/media/'
 
 SIMPLE_MESSAGING_TWILIO_CLIENT_ID = 'changeme' # nosec
 SIMPLE_MESSAGING_TWILIO_AUTH_TOKEN = 'changeme' # nosec
