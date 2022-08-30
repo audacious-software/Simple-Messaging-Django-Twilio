@@ -111,7 +111,7 @@ def process_incoming_request(request): # pylint: disable=too-many-locals, too-ma
 
                     media.save()
 
-                    media_response = requests.get(media.content_url)
+                    media_response = requests.get(media.content_url, timeout=120)
 
                     if media_response.status_code != requests.codes.ok:
                         continue
