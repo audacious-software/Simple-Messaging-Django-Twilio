@@ -47,6 +47,7 @@ jobs:
             cp simple_messaging_twilio/circle_settings.py sm/settings.py
             cp simple_messaging_twilio/circle_urls.py sm/urls.py
             mkdir -p media/incoming_message_media
+            mkdir -p media/outgoing_message_media
             python manage.py migrate
             python manage.py test
             cp simple_messaging/.pylintrc .
@@ -100,6 +101,7 @@ jobs:
             cp simple_messaging_twilio/circle_settings.py sm/settings.py
             cp simple_messaging_twilio/circle_urls.py sm/urls.py
             mkdir -p media/incoming_message_media
+            mkdir -p media/outgoing_message_media
             python manage.py migrate
             python manage.py test
             cp simple_messaging/.pylintrc .
