@@ -3,7 +3,6 @@
 import importlib
 import json
 import mimetypes
-import time
 
 from io import BytesIO
 
@@ -36,16 +35,30 @@ def process_outgoing_message(outgoing_message):
 
         if outgoing_message.message.startswith('image:'):
             twilio_message = client.messages.create(to=outgoing_message.current_destination(), from_=settings.SIMPLE_MESSAGING_TWILIO_PHONE_NUMBER, media_url=[outgoing_message.message[6:]])
-
-            time.sleep(10)
         else:
-            twilio_message = client.messages.create(to=outgoing_message.current_destination(), from_=settings.SIMPLE_MESSAGING_TWILIO_PHONE_NUMBER, body=outgoing_message.fetch_message(transmission_metadata))
+            for outgoing_file in outgoing_message.media.all().order_by('index'):
+                file_url = '%s%s' % (settings.SITE_URL, outgoing_file.content_file.url)
 
-        metadata['twilio_sid'] = twilio_message.sid
+                twilio_message = client.messages.create(to=outgoing_message.current_destination(), from_=settings.SIMPLE_MESSAGING_TWILIO_PHONE_NUMBER, media_url=file_url)
+
+            outgoing_message_content = outgoing_message.fetch_message(transmission_metadata)
+
+            if outgoing_message_content.strip() != '':
+                twilio_message = client.messages.create(to=outgoing_message.current_destination(), from_=settings.SIMPLE_MESSAGING_TWILIO_PHONE_NUMBER, body=outgoing_message_content)
+
+            metadata['twilio_sid'] = twilio_message.sid
 
         return metadata
 
     return None
+
+def simple_messaging_media_enabled():
+    try:
+        return settings.SIMPLE_MESSAGING_MEDIA_ENABLED
+    except AttributeError:
+        pass
+
+    return True
 
 def process_incoming_request(request): # pylint: disable=too-many-locals, too-many-branches, too-many-statements
     response = '<?xml version="1.0" encoding="UTF-8" ?><Response>'
