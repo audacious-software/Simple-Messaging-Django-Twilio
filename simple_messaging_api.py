@@ -17,11 +17,42 @@ from django.utils import timezone
 
 from simple_messaging.models import IncomingMessage, IncomingMessageMedia
 
-def process_outgoing_message(outgoing_message):
-    metadata = {}
+def process_outgoing_message(outgoing_message, metadata=None): # pylint: disable=too-many-branches
+    if metadata is None:
+        metadata = {}
 
-    if hasattr(settings, 'SIMPLE_MESSAGING_TWILIO_CLIENT_ID') and hasattr(settings, 'SIMPLE_MESSAGING_TWILIO_AUTH_TOKEN'):
-        client = Client(settings.SIMPLE_MESSAGING_TWILIO_CLIENT_ID, settings.SIMPLE_MESSAGING_TWILIO_AUTH_TOKEN)
+    twilio_client_id = metadata.get('client_id', None)
+
+    if twilio_client_id is None:
+        if hasattr(settings, 'SIMPLE_MESSAGING_TWILIO_CLIENT_ID'):
+            twilio_client_id = settings.SIMPLE_MESSAGING_TWILIO_CLIENT_ID
+        else:
+            return None
+    else:
+        del metadata['client_id']
+
+    twilio_auth_token = metadata.get('auth_token', None)
+
+    if twilio_auth_token is None:
+        if hasattr(settings, 'SIMPLE_MESSAGING_TWILIO_AUTH_TOKEN'):
+            twilio_auth_token = settings.SIMPLE_MESSAGING_TWILIO_AUTH_TOKEN
+        else:
+            return None
+    else:
+        del metadata['auth_token']
+
+    twilio_phone_number = metadata.get('phone_number', None)
+
+    if twilio_phone_number is None:
+        if hasattr(settings, 'SIMPLE_MESSAGING_TWILIO_PHONE_NUMBER'):
+            twilio_phone_number = settings.SIMPLE_MESSAGING_TWILIO_PHONE_NUMBER
+        else:
+            return None
+    else:
+        del metadata['phone_number']
+
+    if (twilio_client_id is not None) and (twilio_auth_token is not None) and (twilio_phone_number is not None):
+        client = Client(twilio_client_id, twilio_auth_token)
 
         transmission_metadata = {}
 
@@ -34,17 +65,17 @@ def process_outgoing_message(outgoing_message):
         twilio_message = None
 
         if outgoing_message.message.startswith('image:'):
-            twilio_message = client.messages.create(to=outgoing_message.current_destination(), from_=settings.SIMPLE_MESSAGING_TWILIO_PHONE_NUMBER, media_url=[outgoing_message.message[6:]])
+            twilio_message = client.messages.create(to=outgoing_message.current_destination(), from_=twilio_phone_number, media_url=[outgoing_message.message[6:]])
         else:
             for outgoing_file in outgoing_message.media.all().order_by('index'):
                 file_url = '%s%s' % (settings.SITE_URL, outgoing_file.content_file.url)
 
-                twilio_message = client.messages.create(to=outgoing_message.current_destination(), from_=settings.SIMPLE_MESSAGING_TWILIO_PHONE_NUMBER, media_url=file_url)
+                twilio_message = client.messages.create(to=outgoing_message.current_destination(), from_=twilio_phone_number, media_url=file_url)
 
             outgoing_message_content = outgoing_message.fetch_message(transmission_metadata)
 
             if outgoing_message_content.strip() != '':
-                twilio_message = client.messages.create(to=outgoing_message.current_destination(), from_=settings.SIMPLE_MESSAGING_TWILIO_PHONE_NUMBER, body=outgoing_message_content)
+                twilio_message = client.messages.create(to=outgoing_message.current_destination(), from_=twilio_phone_number, body=outgoing_message_content)
 
             metadata['twilio_sid'] = twilio_message.sid
 
@@ -52,7 +83,7 @@ def process_outgoing_message(outgoing_message):
 
     return None
 
-def simple_messaging_media_enabled():
+def simple_messaging_media_enabled(outgoing_message): # pylint: disable=unused-argument
     try:
         return settings.SIMPLE_MESSAGING_MEDIA_ENABLED
     except AttributeError:
@@ -61,6 +92,9 @@ def simple_messaging_media_enabled():
     return True
 
 def process_incoming_request(request): # pylint: disable=too-many-locals, too-many-branches, too-many-statements
+    if request.POST.get('MessageSid', None) is None:
+        return None
+
     response = '<?xml version="1.0" encoding="UTF-8" ?><Response>'
 
     responses = []
