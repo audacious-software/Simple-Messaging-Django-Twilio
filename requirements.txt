@@ -20,5 +20,5 @@ pytz==2022.4
 requests==2.27.1; python_version <= '3.6'
 requests==2.28.1; python_version >= '3.7'
 twilio==6.63.2; python_version < '3.0'
-twilio==7.14.1; python_version >= '3.0'
+twilio==7.14.2; python_version >= '3.0'
 
