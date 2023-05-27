@@ -217,7 +217,7 @@ def lookup_numbers(phone_numbers): # pylint: disable=too-many-branches
             if twilio_client_id == '':
                 twilio_client_id = None
 
-            if twilio_auth_token == '':
+            if twilio_auth_token == '': # nosec
                 twilio_auth_token = None
 
             if twilio_client_id is not None and twilio_auth_token is not None:
