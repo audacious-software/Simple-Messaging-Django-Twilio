@@ -7,6 +7,7 @@ import mimetypes
 from io import BytesIO
 
 import requests
+import phonenumbers
 
 from twilio.rest import Client
 
@@ -195,3 +196,75 @@ def process_incoming_request(request): # pylint: disable=too-many-locals, too-ma
                     pass
 
     return HttpResponse(response, content_type='text/xml')
+
+def lookup_numbers(phone_numbers): # pylint: disable=too-many-branches
+    results = []
+
+    twilio_client_id = None
+    twilio_auth_token = None
+
+    try:
+        from simple_messaging_switchboard.models import Channel # pylint: disable=import-outside-toplevel
+
+        for channel in Channel.objects.all():
+            if channel.channel_type.package_name == 'simple_messaging_twilio':
+                config = json.loads(channel.configuration)
+
+                if 'client_id' in config and 'auth_token' in config:
+                    twilio_client_id = config['client_id']
+                    twilio_auth_token = config['auth_token']
+
+            if twilio_client_id == '':
+                twilio_client_id = None
+
+            if twilio_auth_token == '':
+                twilio_auth_token = None
+
+            if twilio_client_id is not None and twilio_auth_token is not None:
+                break
+    except ImportError:
+        pass
+
+    if twilio_client_id is None and hasattr(settings, 'SIMPLE_MESSAGING_TWILIO_CLIENT_ID'):
+        twilio_client_id = settings.SIMPLE_MESSAGING_TWILIO_CLIENT_ID
+
+    if twilio_auth_token is None and hasattr(settings, 'SIMPLE_MESSAGING_TWILIO_AUTH_TOKEN'):
+        twilio_auth_token = settings.SIMPLE_MESSAGING_TWILIO_AUTH_TOKEN
+
+
+    if None in (twilio_client_id, twilio_auth_token,):
+        return results
+
+    client = Client(twilio_client_id, twilio_auth_token)
+
+    for phone_number in phone_numbers:
+        result = {}
+
+        try:
+            parsed_number = phonenumbers.parse(phone_number, settings.SIMPLE_MESSAGING_COUNTRY_CODE)
+            formatted_number = phonenumbers.format_number(parsed_number, phonenumbers.PhoneNumberFormat.E164)
+
+            lookup = client.lookups.v2.phone_numbers(formatted_number).fetch(fields='line_type_intelligence')
+
+            if lookup.line_type_intelligence is None:
+                result['number'] = phone_number
+                result['type'] = 'Unparseable or invalid phone number'
+                result['carrier'] = 'Unknown'
+                result['notes'] = 'Unable to parse phone number "' + phone_number + '". Please verify that it was entered correctly.'
+            else:
+                result['number'] = lookup.phone_number
+                result['type'] = lookup.line_type_intelligence.get('type', 'Unknown')
+                result['carrier'] = lookup.line_type_intelligence.get('carrier_name', 'Unknown')
+
+                if lookup.line_type_intelligence.get('valid', False):
+                    result['notes'] = 'Number reported as invalid. Please verify that it was entered correctly.'
+
+        except phonenumbers.phonenumberutil.NumberParseException:
+            result['number'] = phone_number
+            result['type'] = 'Unparseable or invalid phone number'
+            result['carrier'] = 'Unknown'
+            result['notes'] = 'Unable to parse phone number "' + phone_number + '". Please verify that it was entered correctly.'
+
+        results.append(result)
+
+    return results
