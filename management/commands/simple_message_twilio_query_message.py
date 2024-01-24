@@ -1,4 +1,4 @@
-# pylint: disable=no-member, line-too-long
+# pylint: disable=no-member, line-too-long, superfluous-parens
 
 import json
 
@@ -32,7 +32,7 @@ class Command(BaseCommand):
         if (twilio_client_id is not None) and (twilio_auth_token is not None):
             client = Client(twilio_client_id, twilio_auth_token)
 
-            message = client.messages(options.get('sid', '')).fetch()
+            message = client.messages(options.get('sid', '')).fetch() # pylint: disable=not-callable
 
             context = message._proxy # pylint: disable=protected-access
 
