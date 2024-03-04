@@ -39,7 +39,7 @@ jobs:
             mv project simple_messaging_twilio
             mkdir django
             cd django
-            django-admin.py startproject sm
+            django-admin startproject sm
             mv ../simple_messaging_twilio sm
             cd sm
             git clone https://github.com/audacious-software/Quicksilver-Django.git quicksilver
