@@ -28,6 +28,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django.contrib.gis',
     'quicksilver',
+    'simple_dashboard',
     'simple_messaging',
 	'simple_messaging_twilio',
 )
@@ -43,7 +44,7 @@ MIDDLEWARE = (
     'django.middleware.security.SecurityMiddleware',
 )
 
-ROOT_URLCONF = 'simple_messaging_twilio.circle_urls'
+ROOT_URLCONF = 'sm.urls'
 
 TEMPLATES = [
     {
