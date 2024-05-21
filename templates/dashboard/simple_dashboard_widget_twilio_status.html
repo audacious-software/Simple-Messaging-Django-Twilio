@@ -1,0 +1,116 @@
+{% with signal.latest_value as latest_value %}
+    {% with latest_value.fetch_value as value %}
+        <div class="mdc-typography mdc-typography--body1" style="margin-top: 16px;">
+            <div style="height: 240px;">
+                <canvas id="simple_dashboard_signal_{{ signal.pk }}"></canvas>
+            </div>
+
+            {% if value.balance.balance %}
+                <div class="mdc-typography mdc-typography--body2" style="margin-top: 1em;">
+                    Remaining Balance: <strong>{{ value.balance.balance }} {{ value.balance.currency }}</strong>
+                </div>
+            {% endif %}
+
+            <script>
+                (function () {
+                    const chartElement = document.getElementById('simple_dashboard_signal_{{ signal.pk }}');
+
+                    const labels = []
+
+                    const incoming = []
+                    const incoming_errors = []
+
+                    const outgoing = []
+                    const outgoing_errors = []
+
+                    {% with value.dates as log_items %}
+                        {% for log_item in log_items %}
+                            labels.push(moment('{{ log_item.date }}').format('MMM D'))
+
+                            incoming.push({{ log_item.incoming_count }})
+                            incoming_errors.push({{ log_item.incoming_error_count }})
+
+                            outgoing.push(0 - {{ log_item.outgoing_count }})
+                            outgoing_errors.push(0 - {{ log_item.outgoing_error_count }})
+                        {% endfor %}
+                    {% endwith %}
+
+                    new Chart(chartElement, {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Incoming Messages',
+                                borderColor: '#4CAF50',
+                                backgroundColor: '#4CAF50',
+                                data: incoming
+                            }, {
+                                label: 'Incoming Messages (Errors)',
+                                borderColor: '#F44336',
+                                backgroundColor: '#F44336',
+                                data: incoming_errors
+                            }, {
+                                label: 'Outgoing Messages',
+                                borderColor: '#2961FF',
+                                backgroundColor: '#2961FF',
+                                data: outgoing,
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            return `Outgoing Messages: ${(0 - context.raw)}`
+                                        }
+                                    }
+                                }
+                            }, {
+                                label: 'Outgoing Messages (Errors)',
+                                borderColor: '#F44336',
+                                backgroundColor: '#F44336',
+                                data: outgoing_errors,
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            return `Outgoing Messages (Errors): ${(0 - context.raw)}`
+                                        }
+                                    }
+                                }
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                x: {
+                                    stacked: true,
+                                },
+                                y: {
+                                    stacked: true,
+                                    beginAtZero: true,
+                                    ticks: {
+                                        precision: 0,
+                                        callback: function(value, index, ticks) {
+                                            if (value < 0) {
+                                                return 0 - value
+                                            }
+
+                                            return value
+                                        }
+                                    }
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    display: true
+                                }
+                            }
+                        }
+                    })
+                })();
+            </script>
+        </div>
+		<div class="mdc-typography mdc-typography--caption" style="margin-top: 8px;">
+			Last updated: <strong>{{ latest_value.recorded }}</strong>
+		</div>
+    {% endwith %}
+{% endwith %}
+
+
