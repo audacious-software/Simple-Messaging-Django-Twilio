@@ -43,7 +43,7 @@ def dashboard_template(signal_name):
 
     return None
 
-def update_dashboard_signal_value(signal_name, client_id=None, auth_token=None, phone_number=None, window_days=28, root_client_id=None, root_auth_token=None):
+def update_dashboard_signal_value(signal_name, client_id=None, auth_token=None, phone_number=None, window_days=28, root_client_id=None, root_auth_token=None): # pylint: disable=too-many-arguments,too-many-locals,too-many-branches,too-many-statements
     if signal_name.startswith('Twilio:'):
         value = {
             'dates': []
