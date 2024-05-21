@@ -116,7 +116,7 @@ def update_dashboard_signal_value(signal_name, client_id=None, auth_token=None, 
 
             basic_auth = requests.auth.HTTPBasicAuth(root_client_id, root_auth_token)
 
-            response = requests.get(balances_url, auth=basic_auth)
+            response = requests.get(balances_url, auth=basic_auth, timeout=300)
 
             value['balance'] = response.json()
 
