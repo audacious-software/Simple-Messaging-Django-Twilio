@@ -5,6 +5,8 @@ import datetime
 import pytz
 import requests
 
+import twilio
+
 from twilio.rest import Client
 
 from django.conf import settings
@@ -126,6 +128,8 @@ def update_dashboard_signal_value(signal_name, client_id=None, auth_token=None, 
             return value
 
         except AttributeError:
+            pass
+        except twilio.base.exceptions.TwilioException: # Encountered in testing or setup contexts
             pass
 
     return None
