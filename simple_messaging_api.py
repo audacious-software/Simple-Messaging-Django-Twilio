@@ -63,20 +63,25 @@ def process_outgoing_message(outgoing_message, metadata=None): # pylint: disable
             except ValueError:
                 transmission_metadata = {}
 
+        destination = metadata.get('destination', None)
+
+        if destination is None:
+            destination = outgoing_message.current_destination()
+
         twilio_message = None
 
         if outgoing_message.message.startswith('image:'):
-            twilio_message = client.messages.create(to=outgoing_message.current_destination(), from_=twilio_phone_number, media_url=[outgoing_message.message[6:]])
+            twilio_message = client.messages.create(to=destination, from_=twilio_phone_number, media_url=[outgoing_message.message[6:]])
         else:
             for outgoing_file in outgoing_message.media.all().order_by('index'):
                 file_url = '%s%s' % (settings.SITE_URL, outgoing_file.content_file.url)
 
-                twilio_message = client.messages.create(to=outgoing_message.current_destination(), from_=twilio_phone_number, media_url=file_url)
+                twilio_message = client.messages.create(to=destination, from_=twilio_phone_number, media_url=file_url)
 
             outgoing_message_content = outgoing_message.fetch_message(transmission_metadata)
 
             if outgoing_message_content.strip() != '':
-                twilio_message = client.messages.create(to=outgoing_message.current_destination(), from_=twilio_phone_number, body=outgoing_message_content)
+                twilio_message = client.messages.create(to=destination, from_=twilio_phone_number, body=outgoing_message_content)
 
             metadata['twilio_sid'] = twilio_message.sid
 

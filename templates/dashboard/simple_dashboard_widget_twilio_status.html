@@ -35,6 +35,12 @@
                         {% endfor %}
                     {% endwith %}
 
+                    let yAxisType = 'linear'
+
+                    {% if signal.configuration.log_y %}
+                        yAxisType = 'logarithmic'
+                    {% endif %}
+
                     new Chart(chartElement, {
                         type: 'bar',
                         data: {
@@ -83,6 +89,7 @@
                                     stacked: true,
                                 },
                                 y: {
+                                    type: yAxisType,
                                     stacked: true,
                                     beginAtZero: true,
                                     ticks: {
@@ -107,9 +114,9 @@
                 })();
             </script>
         </div>
-		<div class="mdc-typography mdc-typography--caption" style="margin-top: 8px;">
-			Last updated: <strong>{{ latest_value.recorded }}</strong>
-		</div>
+        <div class="mdc-typography mdc-typography--caption" style="margin-top: 8px;">
+            Last updated: <strong>{{ latest_value.recorded }}</strong>
+        </div>
     {% endwith %}
 {% endwith %}
 
