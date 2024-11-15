@@ -1,6 +1,7 @@
 # pylint: disable=line-too-long, no-member, len-as-condition, import-outside-toplevel
 
 import datetime
+import logging
 
 import pytz
 import requests
@@ -60,6 +61,8 @@ def update_dashboard_signal_value(signal_name, client_id=None, auth_token=None, 
                 phone_number = settings.SIMPLE_MESSAGING_TWILIO_PHONE_NUMBER
 
             client = Client(client_id, auth_token)
+
+            client.http_client.logger.setLevel(logging.WARN)
 
             here_tz = pytz.timezone(settings.TIME_ZONE)
 
