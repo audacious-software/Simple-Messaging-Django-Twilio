@@ -11,7 +11,7 @@ Django==4.2.16; python_version >= '3.8'
 django-prettyjson==0.4.1
 future==1.0.0
 lockfile==0.12.2
-phonenumbers==8.13.49
+phonenumbers==8.13.50
 psycopg2-binary==2.8.6; python_version < '3.0'
 psycopg2-binary==2.9.8; python_version >= '3.0' and python_version < '3.7'
 psycopg2-binary==2.9.9; python_version == '3.7'
