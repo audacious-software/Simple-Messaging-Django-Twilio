@@ -58,7 +58,7 @@ jobs:
             python manage.py install_quicksilver_tasks
             python manage.py simple_dashboard_update_values
             python manage.py test
-            cp simple_messaging/.pylintrc .
+            cp simple_messaging_twilio/.pylintrc .
             pylint simple_messaging
             pylint simple_messaging_twilio
             bandit -r .
@@ -116,7 +116,7 @@ jobs:
             python manage.py install_quicksilver_tasks
             python manage.py simple_dashboard_update_values
             python manage.py test
-            cp simple_messaging/.pylintrc .
+            cp simple_messaging_twilio/.pylintrc .
             pylint simple_messaging
             pylint simple_messaging_twilio
             bandit -r .
@@ -174,7 +174,7 @@ jobs:
             python manage.py install_quicksilver_tasks
             python manage.py simple_dashboard_update_values
             python manage.py test
-            cp simple_messaging/.pylintrc .
+            cp simple_messaging_twilio/.pylintrc .
             pylint simple_messaging
             pylint simple_messaging_twilio
             bandit -r .
@@ -232,7 +232,7 @@ jobs:
             python manage.py install_quicksilver_tasks
             python manage.py simple_dashboard_update_values
             python manage.py test
-            cp simple_messaging/.pylintrc .
+            cp simple_messaging_twilio/.pylintrc .
             pylint simple_messaging
             pylint simple_messaging_twilio
             bandit -r .
@@ -290,7 +290,7 @@ jobs:
             python manage.py install_quicksilver_tasks
             python manage.py simple_dashboard_update_values
             python manage.py test
-            cp simple_messaging/.pylintrc .
+            cp simple_messaging_twilio/.pylintrc .
             pylint simple_messaging
             pylint simple_messaging_twilio
             bandit -r .
@@ -348,7 +348,7 @@ jobs:
             python manage.py install_quicksilver_tasks
             python manage.py simple_dashboard_update_values
             python manage.py test
-            cp simple_messaging/.pylintrc .
+            cp simple_messaging_twilio/.pylintrc .
             pylint simple_messaging
             pylint simple_messaging_twilio
       - save_cache:
