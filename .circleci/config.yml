@@ -50,6 +50,8 @@ jobs:
             pip install -r simple_messaging/requirements.txt
             git clone https://github.com/audacious-software/Simple-Dashboard-Django.git simple_dashboard
             pip install -r simple_dashboard/requirements.txt
+            git clone https://github.com/audacious-software/Django-Dialog-Engine.git django_dialog_engine
+            pip install -r django_dialog_engine/requirements.txt
             cp simple_messaging_twilio/.circleci/circle_settings.py sm/settings.py
             cp simple_messaging_twilio/.circleci/circle_urls.py sm/urls.py
             mkdir -p media/incoming_message_media
@@ -108,6 +110,8 @@ jobs:
             pip install -r simple_messaging/requirements.txt
             git clone https://github.com/audacious-software/Simple-Dashboard-Django.git simple_dashboard
             pip install -r simple_dashboard/requirements.txt
+            git clone https://github.com/audacious-software/Django-Dialog-Engine.git django_dialog_engine
+            pip install -r django_dialog_engine/requirements.txt
             cp simple_messaging_twilio/.circleci/circle_settings.py sm/settings.py
             cp simple_messaging_twilio/.circleci/circle_urls.py sm/urls.py
             mkdir -p media/incoming_message_media
@@ -166,6 +170,8 @@ jobs:
             pip install -r simple_messaging/requirements.txt
             git clone https://github.com/audacious-software/Simple-Dashboard-Django.git simple_dashboard
             pip install -r simple_dashboard/requirements.txt
+            git clone https://github.com/audacious-software/Django-Dialog-Engine.git django_dialog_engine
+            pip install -r django_dialog_engine/requirements.txt
             cp simple_messaging_twilio/.circleci/circle_settings.py sm/settings.py
             cp simple_messaging_twilio/.circleci/circle_urls.py sm/urls.py
             mkdir -p media/incoming_message_media
@@ -224,6 +230,8 @@ jobs:
             pip install -r simple_messaging/requirements.txt
             git clone https://github.com/audacious-software/Simple-Dashboard-Django.git simple_dashboard
             pip install -r simple_dashboard/requirements.txt
+            git clone https://github.com/audacious-software/Django-Dialog-Engine.git django_dialog_engine
+            pip install -r django_dialog_engine/requirements.txt
             cp simple_messaging_twilio/.circleci/circle_settings.py sm/settings.py
             cp simple_messaging_twilio/.circleci/circle_urls.py sm/urls.py
             mkdir -p media/incoming_message_media
@@ -282,6 +290,8 @@ jobs:
             pip install -r simple_messaging/requirements.txt
             git clone https://github.com/audacious-software/Simple-Dashboard-Django.git simple_dashboard
             pip install -r simple_dashboard/requirements.txt
+            git clone https://github.com/audacious-software/Django-Dialog-Engine.git django_dialog_engine
+            pip install -r django_dialog_engine/requirements.txt
             cp simple_messaging_twilio/.circleci/circle_settings.py sm/settings.py
             cp simple_messaging_twilio/.circleci/circle_urls.py sm/urls.py
             mkdir -p media/incoming_message_media
@@ -340,6 +350,8 @@ jobs:
             pip install -r simple_messaging/requirements.txt
             git clone https://github.com/audacious-software/Simple-Dashboard-Django.git simple_dashboard
             pip install -r simple_dashboard/requirements.txt
+            git clone https://github.com/audacious-software/Django-Dialog-Engine.git django_dialog_engine
+            pip install -r django_dialog_engine/requirements.txt
             cp simple_messaging_twilio/.circleci/circle_settings.py sm/settings.py
             cp simple_messaging_twilio/.circleci/circle_urls.py sm/urls.py
             mkdir -p media/incoming_message_media

@@ -29,6 +29,7 @@ INSTALLED_APPS = (
     'django.contrib.gis',
     'prettyjson',
     'quicksilver',
+    'django_dialog_engine',
     'simple_dashboard',
     'simple_messaging',
 	'simple_messaging_twilio',
