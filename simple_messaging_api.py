@@ -2,6 +2,7 @@
 
 import importlib
 import json
+import logging
 import mimetypes
 
 from io import BytesIO
@@ -17,6 +18,8 @@ from django.http import HttpResponse
 from django.utils import timezone
 
 from simple_messaging.models import IncomingMessage, IncomingMessageMedia
+
+logger = logging.getLogger(__name__)
 
 def process_outgoing_message(outgoing_message, metadata=None): # pylint: disable=too-many-branches
     if metadata is None:
