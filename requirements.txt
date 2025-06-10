@@ -27,7 +27,7 @@ PyNaCl==1.5.0; python_version >= '3.0'
 pytz==2025.2
 requests==2.27.1; python_version <= '3.6'
 requests==2.31.0; python_version == '3.7'
-requests==2.32.3; python_version >= '3.8'
+requests==2.32.4; python_version >= '3.8'
 twilio==6.63.2; python_version < '3.0'
 twilio==7.17.0; python_version >= '3.6' and python_version < '3.7'
 twilio==9.6.2; python_version >= '3.7'
