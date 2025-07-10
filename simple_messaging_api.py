@@ -19,6 +19,8 @@ from django.utils import timezone
 
 from simple_messaging.models import IncomingMessage, IncomingMessageMedia, BlockedSender
 
+logger = logging.getLogger(__name__) # pylint: disable=invalid-name
+
 def process_outgoing_message(outgoing_message, metadata=None): # pylint: disable=too-many-branches
     if metadata is None:
         metadata = {}
