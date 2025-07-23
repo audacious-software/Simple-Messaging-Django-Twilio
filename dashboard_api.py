@@ -1,4 +1,4 @@
-# pylint: disable=line-too-long, no-member, len-as-condition, import-outside-toplevel
+# pylint: disable=line-too-long, no-member, len-as-condition, import-outside-toplevel, too-many-positional-arguments
 
 import datetime
 import logging
