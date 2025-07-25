@@ -91,8 +91,8 @@ def process_outgoing_message(outgoing_message, metadata=None): # pylint: disable
             if outgoing_message_content.strip() != '':
                 outgoing_messages = split_into_bundles(outgoing_message_content.strip(), bundle_size=1000)
 
-                for outgoing_message in outgoing_messages:
-                    twilio_message = client.messages.create(to=destination, from_=twilio_phone_number, body=outgoing_message)
+                for outgoing_message_chunk in outgoing_messages:
+                    twilio_message = client.messages.create(to=destination, from_=twilio_phone_number, body=outgoing_message_chunk)
 
                     twilio_sids.append(twilio_message.sid)
 
