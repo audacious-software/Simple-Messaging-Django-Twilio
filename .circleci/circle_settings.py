@@ -7,6 +7,7 @@ Settings.py for testing on Travis CI.
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
 import sys
+import tempfile
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -113,3 +114,7 @@ SIMPLE_MESSAGING_TWILIO_PHONE_NUMBER = '+15556667777'
 SIMPLE_MESSAGING_SECRET_KEY = 'changeme' # nosec
 
 SIMPLE_MESSAGING_COUNTRY_CODE = 'US'
+
+SIMPLE_DASHBOARD_SITE_NAME = 'Simple Messaging Twilio'
+
+QUICKSILVER_LOCK_DIR = tempfile.gettempdir()
