@@ -18,6 +18,7 @@ from django.http import HttpResponse
 from django.utils import timezone
 
 from simple_messaging.models import IncomingMessage, IncomingMessageMedia
+from simple_messaging.utils import split_into_bundles
 
 logger = logging.getLogger(__name__) # pylint: disable=invalid-name
 
@@ -76,17 +77,26 @@ def process_outgoing_message(outgoing_message, metadata=None): # pylint: disable
         if outgoing_message.message.startswith('image:'):
             twilio_message = client.messages.create(to=destination, from_=twilio_phone_number, media_url=[outgoing_message.message[6:]])
         else:
+            twilio_sids = []
+
             for outgoing_file in outgoing_message.media.all().order_by('index'):
                 file_url = '%s%s' % (settings.SITE_URL, outgoing_file.content_file.url)
 
                 twilio_message = client.messages.create(to=destination, from_=twilio_phone_number, media_url=file_url)
 
+                twilio_sids.append(twilio_message.sid)
+
             outgoing_message_content = outgoing_message.fetch_message(transmission_metadata)
 
             if outgoing_message_content.strip() != '':
-                twilio_message = client.messages.create(to=destination, from_=twilio_phone_number, body=outgoing_message_content)
+                outgoing_messages = split_into_bundles(outgoing_message_content.strip(), bundle_size=1000)
 
-            metadata['twilio_sid'] = twilio_message.sid
+                for outgoing_message in outgoing_messages:
+                    twilio_message = client.messages.create(to=destination, from_=twilio_phone_number, body=outgoing_message)
+
+                    twilio_sids.append(twilio_message.sid)
+
+            metadata['twilio_sid'] = twilio_sids
 
         return metadata
 
