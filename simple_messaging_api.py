@@ -17,12 +17,8 @@ from django.core import files
 from django.http import HttpResponse
 from django.utils import timezone
 
-<<<<<<< HEAD
 from simple_messaging.models import IncomingMessage, IncomingMessageMedia, BlockedSender
-=======
-from simple_messaging.models import IncomingMessage, IncomingMessageMedia
 from simple_messaging.utils import split_into_bundles
->>>>>>> 6d1609bc7a4eeeaf44fa01deeaa53dd850c58b63
 
 logger = logging.getLogger(__name__) # pylint: disable=invalid-name
 
