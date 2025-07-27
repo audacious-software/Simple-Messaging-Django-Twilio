@@ -139,7 +139,7 @@ def process_incoming_request(request): # pylint: disable=too-many-locals, too-ma
         if BlockedSender.objects.filter(sender=sender).count() > 0:
             response = '<?xml version="1.0" encoding="UTF-8" ?><Response></Response>'
 
-            logging.info('[simple_messaging_twilio] Blocked incoming message from %s.' % sender)
+            logging.info('[simple_messaging_twilio] Blocked incoming message from %s.', sender)
 
             return HttpResponse(response, content_type='text/xml')
 
