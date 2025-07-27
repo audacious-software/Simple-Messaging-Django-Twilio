@@ -17,7 +17,12 @@ from django.core import files
 from django.http import HttpResponse
 from django.utils import timezone
 
+<<<<<<< HEAD
 from simple_messaging.models import IncomingMessage, IncomingMessageMedia, BlockedSender
+=======
+from simple_messaging.models import IncomingMessage, IncomingMessageMedia
+from simple_messaging.utils import split_into_bundles
+>>>>>>> 6d1609bc7a4eeeaf44fa01deeaa53dd850c58b63
 
 logger = logging.getLogger(__name__) # pylint: disable=invalid-name
 
@@ -76,17 +81,26 @@ def process_outgoing_message(outgoing_message, metadata=None): # pylint: disable
         if outgoing_message.message.startswith('image:'):
             twilio_message = client.messages.create(to=destination, from_=twilio_phone_number, media_url=[outgoing_message.message[6:]])
         else:
+            twilio_sids = []
+
             for outgoing_file in outgoing_message.media.all().order_by('index'):
                 file_url = '%s%s' % (settings.SITE_URL, outgoing_file.content_file.url)
 
                 twilio_message = client.messages.create(to=destination, from_=twilio_phone_number, media_url=file_url)
 
+                twilio_sids.append(twilio_message.sid)
+
             outgoing_message_content = outgoing_message.fetch_message(transmission_metadata)
 
             if outgoing_message_content.strip() != '':
-                twilio_message = client.messages.create(to=destination, from_=twilio_phone_number, body=outgoing_message_content)
+                outgoing_messages = split_into_bundles(outgoing_message_content.strip(), bundle_size=1000)
 
-            metadata['twilio_sid'] = twilio_message.sid
+                for outgoing_message_chunk in outgoing_messages:
+                    twilio_message = client.messages.create(to=destination, from_=twilio_phone_number, body=outgoing_message_chunk)
+
+                    twilio_sids.append(twilio_message.sid)
+
+            metadata['twilio_sid'] = twilio_sids
 
         return metadata
 
@@ -284,3 +298,96 @@ def lookup_numbers(phone_numbers): # pylint: disable=too-many-branches
         results.append(result)
 
     return results
+
+def fetch_sync_messages(since): # pylint: disable=too-many-locals
+    channels = []
+
+    try:
+        from simple_messaging_switchboard.models import Channel # pylint: disable=import-outside-toplevel
+
+        for channel in Channel.objects.all():
+            if channel.channel_type.package_name == 'simple_messaging_twilio':
+                config = json.loads(channel.configuration)
+
+                if 'client_id' in config and 'auth_token' in config and 'phone_number' in config and 'country_code' in config:
+                    twilio_client_id = config['client_id']
+                    twilio_auth_token = config['auth_token']
+                    phone_number = config['phone_number']
+                    country_code = config['country_code']
+
+                    channels.append((phone_number, country_code, twilio_client_id, twilio_auth_token, channel.identifier))
+    except ImportError:
+        pass
+
+    if hasattr(settings, 'SIMPLE_MESSAGING_TWILIO_CLIENT_ID') and hasattr(settings, 'SIMPLE_MESSAGING_TWILIO_AUTH_TOKEN') and hasattr(settings, 'SIMPLE_MESSAGING_TWILIO_PHONE_NUMBER') and hasattr(settings, 'SIMPLE_MESSAGING_COUNTRY_CODE'):
+        channels.append((
+            settings.SIMPLE_MESSAGING_TWILIO_PHONE_NUMBER,
+            settings.SIMPLE_MESSAGING_COUNTRY_CODE,
+            settings.SIMPLE_MESSAGING_TWILIO_CLIENT_ID,
+            settings.SIMPLE_MESSAGING_TWILIO_AUTH_TOKEN,
+            'default',
+        ))
+
+    messages = []
+
+    for channel in channels:
+        channel_client = Client(channel[2], channel[3])
+
+        parsed_number = phonenumbers.parse(channel[0], channel[1])
+        formatted_number = phonenumbers.format_number(parsed_number, phonenumbers.PhoneNumberFormat.E164)
+
+        for twilio_message in channel_client.messages.list(to=formatted_number, date_sent_after=since):
+            message = {
+                'id': {
+                    'SmsMessageSid': twilio_message.sid,
+                    'twilio_sid': twilio_message.sid,
+                },
+                'message_channel': channel[4],
+                'to': twilio_message.to,
+                'from': twilio_message.from_,
+                'message': twilio_message.body,
+                'sent': twilio_message.date_sent,
+                'direction': 'incoming',
+                'metadata': {
+                    'error': twilio_message.error_message,
+                    'status': twilio_message.status,
+                },
+                'media': [],
+            }
+
+            for media in twilio_message.media.list():
+                message['media'].append({
+                    'content_type': media.content_type,
+                    'url': 'https://api.twilio.com%s' % media.uri[:-5]
+                })
+
+            messages.append(message)
+
+        for twilio_message in channel_client.messages.list(from_=formatted_number, date_sent_after=since):
+            message = {
+                'id': {
+                    'SmsMessageSid': twilio_message.sid,
+                    'twilio_sid': twilio_message.sid,
+                },
+                'message_channel': channel[4],
+                'to': twilio_message.to,
+                'from': twilio_message.from_,
+                'message': twilio_message.body,
+                'sent': twilio_message.date_sent,
+                'direction': 'outgoing',
+                'metadata': {
+                    'error': twilio_message.error_message,
+                    'status': twilio_message.status,
+                },
+                'media': [],
+            }
+
+            for media in twilio_message.media.list():
+                message['media'].append({
+                    'content_type': media.content_type,
+                    'url': 'https://api.twilio.com%s' % media.uri[:-5]
+                })
+
+            messages.append(message)
+
+    return messages

@@ -1,4 +1,4 @@
-# pylint: disable=line-too-long
+# pylint: disable=line-too-long, too-many-positional-arguments
 
 import json
 import traceback
