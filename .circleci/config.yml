@@ -345,9 +345,8 @@ jobs:
           command: |
             sudo find /etc/apt/
             sudo cat /etc/apt/sources.list
+            sudo sed -i -e 's/http:\/\/archive\.ubuntu\.com\/ubuntu\//http:\/\/us-west-2\.ec2\.archive\.ubuntu\.com\/ubuntu\//' /etc/apt/sources.list
             sudo cat /etc/apt/sources.list.d/*
-            sudo rm /etc/apt/sources.list.d/archive_uri-https_download_docker_com_linux_ubuntu-jammy.list
-            echo "deb [arch=amd64] http://us-west-2.ec2.archive.ubuntu.com/ubuntu jammy stable" | sudo tee -a /etc/apt/sources.list.d/amazon.list
             sudo apt-get update && sudo apt-get install -y gdal-bin
             python3 -m venv /home/circleci/venv
             . /home/circleci/venv/bin/activate
@@ -409,8 +408,7 @@ jobs:
           name: Build and validate
           command: |
             sudo find  /etc/apt/sources.list.d
-            sudo rm /etc/apt/sources.list.d/archive_uri-https_download_docker_com_linux_ubuntu-jammy.list
-            echo "deb [arch=amd64] http://us-west-2.ec2.archive.ubuntu.com/ubuntu jammy stable" | sudo tee -a /etc/apt/sources.list.d/amazon.list
+            sudo sed -i -e 's/http:\/\/archive\.ubuntu\.com\/ubuntu\//http:\/\/us-west-2\.ec2\.archive\.ubuntu\.com\/ubuntu\//' /etc/apt/sources.list
             sudo apt-get update && sudo apt-get install -y gdal-bin
             virtualenv /home/circleci/venv
             . /home/circleci/venv/bin/activate
