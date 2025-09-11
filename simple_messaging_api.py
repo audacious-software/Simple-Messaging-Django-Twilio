@@ -18,7 +18,7 @@ from django.core import files
 from django.http import HttpResponse
 from django.utils import timezone
 
-from simple_messaging.models import IncomingMessage, IncomingMessageMedia
+from simple_messaging.models import IncomingMessage, IncomingMessageMedia, BlockedSender
 from simple_messaging.utils import split_into_bundles
 
 logger = logging.getLogger(__name__) # pylint: disable=invalid-name
@@ -140,6 +140,15 @@ def process_incoming_request(request): # pylint: disable=too-many-locals, too-ma
     response += '</Response>'
 
     if request.method == 'POST': # pylint: disable=too-many-nested-blocks
+        sender = request.POST['From']
+
+        if BlockedSender.objects.filter(sender=sender).count() > 0:
+            response = '<?xml version="1.0" encoding="UTF-8" ?><Response></Response>'
+
+            logging.info('[simple_messaging_twilio] Blocked incoming message from %s.', sender)
+
+            return HttpResponse(response, content_type='text/xml')
+
         record_responses = True
 
         for app in settings.INSTALLED_APPS:
@@ -156,7 +165,6 @@ def process_incoming_request(request): # pylint: disable=too-many-locals, too-ma
             now = timezone.now()
 
             destination = request.POST['To']
-            sender = request.POST['From']
 
             incoming = IncomingMessage(recipient=destination, sender=sender)
             incoming.receive_date = now
