@@ -23,7 +23,7 @@ from simple_messaging.utils import split_into_bundles
 
 logger = logging.getLogger(__name__) # pylint: disable=invalid-name
 
-def process_outgoing_message(outgoing_message, metadata=None): # pylint: disable=too-many-branches
+def process_outgoing_message(outgoing_message, metadata=None): # pylint: disable=too-many-branches, too-many-locals, too-many-statements
     if metadata is None:
         metadata = {}
 
@@ -92,7 +92,7 @@ def process_outgoing_message(outgoing_message, metadata=None): # pylint: disable
             if outgoing_message_content.strip() != '':
                 outgoing_messages = split_into_bundles(outgoing_message_content.strip(), bundle_size=1000)
 
-                for index in range(0, len(outgoing_messages)):
+                for index in range(0, len(outgoing_messages)): # pylint: disable=consider-using-enumerate
                     outgoing_message_chunk = outgoing_messages[index]
 
                     if index > 0:
