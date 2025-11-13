@@ -4,16 +4,19 @@ import importlib
 import json
 import logging
 import mimetypes
+import tempfile
 
 from io import BytesIO
 
 import requests
 import phonenumbers
 
+from PIL import Image
 from twilio.rest import Client
 
 from django.conf import settings
 from django.core import files
+from django.core.files.base import File
 from django.http import HttpResponse
 from django.utils import timezone
 
@@ -22,7 +25,86 @@ from simple_messaging.utils import split_into_bundles
 
 logger = logging.getLogger(__name__) # pylint: disable=invalid-name
 
-def process_outgoing_message(outgoing_message, metadata=None): # pylint: disable=too-many-branches
+SUPPORTED_TYPES = [
+    'image/jpeg',
+    'image/jpg',
+    'image/gif',
+    'image/png',
+    'image/heic',
+    'image/heif',
+    'image/tiff',
+    'image/bmp',
+    'video/mpeg4',
+    'video/mp4',
+    'video/mpeg',
+    'video/webm',
+    'video/quicktime',
+    'video/3gpp',
+    'video/3gpp2',
+    'video/3gpp-tt',
+    'video/H261',
+    'video/H263',
+    'video/H263-1998',
+    'video/H263-2000',
+    'video/H264',
+    'video/H265',
+    'audio/ogg',
+    'audio/mpeg',
+    'audio/mp4',
+    'audio/mp3',
+    'audio/3gpp',
+    'audio/3gpp2',
+    'audio/basic',
+    'audio/L24',
+    'audio/vnd.rn-realaudio',
+    'audio/vnd.wave',
+    'audio/ac3',
+    'audio/webm',
+    'audio/amr-nb',
+    'audio/amr',
+    'text/vcard',
+    'text/x-vcard',
+    'text/directory',
+    'text/csv',
+    'text/richtext',
+    'text/rtf',
+    'text/calendar',
+    'application/pdf',
+    'application/vcard',
+]
+
+TYPE_MAP = {
+    'image/webp': 'PIL:png'
+}
+
+def convert_file(media_object):
+    conversion = TYPE_MAP.get(media_object.content_type, None)
+
+    if conversion is not None:
+        if conversion.startswith('PIL:'):
+            final_format = conversion.replace('PIL:', '')
+
+            with Image.open(media_object.file.path) as existing_image:
+                new_file = None
+
+                if final_format == 'png':
+                    new_file = existing_image.convert('RGBA')
+                else:
+                    new_file = existing_image.convert('RGB')
+
+                with tempfile.TemporaryDirectory() as temp_dir:
+                    basename = '%s.%s' % (media_object.file.path.split('/')[-1], final_format)
+
+                    filename = '%s/%s' % (temp_dir, basename)
+
+                    new_file.save(filename, final_format)
+
+                    with open(filename, 'rb') as new_image_file:
+                        media_object.file.save(basename, File(new_image_file))
+
+    media_object.save()
+
+def process_outgoing_message(outgoing_message, metadata=None): # pylint: disable=too-many-branches, too-many-statements
     if metadata is None:
         metadata = {}
 
@@ -80,6 +162,11 @@ def process_outgoing_message(outgoing_message, metadata=None): # pylint: disable
             twilio_sids = []
 
             for outgoing_file in outgoing_message.media.all().order_by('index'):
+                if (outgoing_file.content_type in SUPPORTED_TYPES) is False:
+                    convert_file(outgoing_file)
+
+                    outgoing_file = outgoing_file.objects.get(pk=outgoing_file.pk)
+
                 file_url = '%s%s' % (settings.SITE_URL, outgoing_file.content_file.url)
 
                 twilio_message = client.messages.create(to=destination, from_=twilio_phone_number, media_url=file_url)
