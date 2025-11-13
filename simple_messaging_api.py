@@ -5,6 +5,7 @@ import json
 import logging
 import mimetypes
 import tempfile
+import time
 
 from io import BytesIO
 
@@ -104,7 +105,7 @@ def convert_file(media_object):
 
     media_object.save()
 
-def process_outgoing_message(outgoing_message, metadata=None): # pylint: disable=too-many-branches, too-many-statements
+def process_outgoing_message(outgoing_message, metadata=None): # pylint: disable=too-many-branches, too-many-locals, too-many-statements
     if metadata is None:
         metadata = {}
 
@@ -178,7 +179,12 @@ def process_outgoing_message(outgoing_message, metadata=None): # pylint: disable
             if outgoing_message_content.strip() != '':
                 outgoing_messages = split_into_bundles(outgoing_message_content.strip(), bundle_size=1000)
 
-                for outgoing_message_chunk in outgoing_messages:
+                for index in range(0, len(outgoing_messages)): # pylint: disable=consider-using-enumerate
+                    outgoing_message_chunk = outgoing_messages[index]
+
+                    if index > 0:
+                        time.sleep(1)
+
                     twilio_message = client.messages.create(to=destination, from_=twilio_phone_number, body=outgoing_message_chunk)
 
                     twilio_sids.append(twilio_message.sid)
