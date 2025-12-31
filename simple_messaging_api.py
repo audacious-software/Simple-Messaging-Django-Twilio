@@ -103,7 +103,7 @@ def convert_file(media_object):
                     with open(filename, 'rb') as new_image_file:
                         media_object.file.save(basename, File(new_image_file))
 
-    media_object.save()
+        media_object.save()
 
 def process_outgoing_message(outgoing_message, metadata=None): # pylint: disable=too-many-branches, too-many-locals, too-many-statements
     if metadata is None:
