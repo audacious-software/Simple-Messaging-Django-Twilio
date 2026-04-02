@@ -139,7 +139,7 @@ def process_outgoing_message(outgoing_message, metadata=None): # pylint: disable
     else:
         del metadata['phone_number']
 
-    if (twilio_client_id is not None) and (twilio_auth_token is not None) and (twilio_phone_number is not None):
+    if (twilio_client_id is not None) and (twilio_auth_token is not None) and (twilio_phone_number is not None): # pylint: disable=too-many-nested-blocks
         client = Client(twilio_client_id, twilio_auth_token)
 
         transmission_metadata = {}
@@ -162,32 +162,61 @@ def process_outgoing_message(outgoing_message, metadata=None): # pylint: disable
         else:
             twilio_sids = []
 
-            for outgoing_file in outgoing_message.media.all().order_by('index'):
-                if (outgoing_file.content_type in SUPPORTED_TYPES) is False:
-                    convert_file(outgoing_file)
+            if outgoing_message.media.count() > 10:
+                for outgoing_file in outgoing_message.media.all().order_by('index'):
+                    if (outgoing_file.content_type in SUPPORTED_TYPES) is False:
+                        convert_file(outgoing_file)
 
-                    outgoing_file = outgoing_file.objects.get(pk=outgoing_file.pk)
+                        outgoing_file = outgoing_file.objects.get(pk=outgoing_file.pk)
 
-                file_url = '%s%s' % (settings.SITE_URL, outgoing_file.content_file.url)
+                    file_url = '%s%s' % (settings.SITE_URL, outgoing_file.content_file.url)
 
-                twilio_message = client.messages.create(to=destination, from_=twilio_phone_number, media_url=file_url)
-
-                twilio_sids.append(twilio_message.sid)
-
-            outgoing_message_content = outgoing_message.fetch_message(transmission_metadata)
-
-            if outgoing_message_content.strip() != '':
-                outgoing_messages = split_into_bundles(outgoing_message_content.strip(), bundle_size=1000)
-
-                for index in range(0, len(outgoing_messages)): # pylint: disable=consider-using-enumerate
-                    outgoing_message_chunk = outgoing_messages[index]
-
-                    if index > 0:
-                        time.sleep(1)
-
-                    twilio_message = client.messages.create(to=destination, from_=twilio_phone_number, body=outgoing_message_chunk)
+                    twilio_message = client.messages.create(to=destination, from_=twilio_phone_number, media_url=file_url)
 
                     twilio_sids.append(twilio_message.sid)
+
+                outgoing_message_content = outgoing_message.fetch_message(transmission_metadata)
+
+                if outgoing_message_content.strip() != '':
+                    outgoing_messages = split_into_bundles(outgoing_message_content.strip(), bundle_size=1000)
+
+                    for index in range(0, len(outgoing_messages)): # pylint: disable=consider-using-enumerate
+                        outgoing_message_chunk = outgoing_messages[index]
+
+                        if index > 0:
+                            time.sleep(1)
+
+                        twilio_message = client.messages.create(to=destination, from_=twilio_phone_number, body=outgoing_message_chunk)
+
+                        twilio_sids.append(twilio_message.sid)
+            else:
+                outgoing_message_content = outgoing_message.fetch_message(transmission_metadata).strip()
+
+                msg_args = {
+                    'to': destination,
+                    'from_': twilio_phone_number
+                }
+
+                if outgoing_message_content != '':
+                    msg_args['body'] = outgoing_message_content
+
+                media_urls = []
+
+                for outgoing_file in outgoing_message.media.all().order_by('index'):
+                    if (outgoing_file.content_type in SUPPORTED_TYPES) is False:
+                        convert_file(outgoing_file)
+
+                        outgoing_file = outgoing_file.objects.get(pk=outgoing_file.pk)
+
+                    file_url = '%s%s' % (settings.SITE_URL, outgoing_file.content_file.url)
+
+                    media_urls.append(file_url)
+
+                if len(media_urls) > 0:
+                    msg_args['media_url'] = media_urls
+
+                twilio_message = client.messages.create(**msg_args)
+                twilio_sids.append(twilio_message.sid)
 
             metadata['twilio_sid'] = twilio_sids
 
