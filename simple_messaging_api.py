@@ -178,7 +178,7 @@ def process_outgoing_message(outgoing_message, metadata=None): # pylint: disable
                 outgoing_message_content = outgoing_message.fetch_message(transmission_metadata)
 
                 if outgoing_message_content.strip() != '':
-                    outgoing_messages = split_into_bundles(outgoing_message_content.strip(), bundle_size=1000)
+                    outgoing_messages = split_into_bundles(outgoing_message_content.strip(), bundle_size=320)
 
                     for index in range(0, len(outgoing_messages)): # pylint: disable=consider-using-enumerate
                         outgoing_message_chunk = outgoing_messages[index]
@@ -212,8 +212,10 @@ def process_outgoing_message(outgoing_message, metadata=None): # pylint: disable
 
                     media_urls.append(file_url)
 
-                if len(media_urls) > 0:
+                if len(media_urls) > 0: # pylint: disable=len-as-condition
                     msg_args['media_url'] = media_urls
+                elif len(msg_args.get('body', '')) > 80 and metadata.get('use_mms', True):
+                    msg_args['send_as_mms'] = True
 
                 twilio_message = client.messages.create(**msg_args)
                 twilio_sids.append(twilio_message.sid)
