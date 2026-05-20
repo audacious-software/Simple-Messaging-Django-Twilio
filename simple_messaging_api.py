@@ -178,7 +178,7 @@ def process_outgoing_message(outgoing_message, metadata=None): # pylint: disable
                 outgoing_message_content = outgoing_message.fetch_message(transmission_metadata)
 
                 if outgoing_message_content.strip() != '':
-                    outgoing_messages = split_into_bundles(outgoing_message_content.strip(), bundle_size=320)
+                    outgoing_messages = split_into_bundles(outgoing_message_content.strip())
 
                     for index in range(0, len(outgoing_messages)): # pylint: disable=consider-using-enumerate
                         outgoing_message_chunk = outgoing_messages[index]
@@ -197,28 +197,42 @@ def process_outgoing_message(outgoing_message, metadata=None): # pylint: disable
                     'from_': twilio_phone_number
                 }
 
-                if outgoing_message_content != '':
-                    msg_args['body'] = outgoing_message_content
+                outgoing_messages = [outgoing_message_content]
 
-                media_urls = []
+                if len(outgoing_message_content) > 1000:
+                    outgoing_messages = split_into_bundles(outgoing_message_content)
+                    metadata['split_messages'] = outgoing_messages
 
-                for outgoing_file in outgoing_message.media.all().order_by('index'):
-                    if (outgoing_file.content_type in SUPPORTED_TYPES) is False:
-                        convert_file(outgoing_file)
+                for index in range(0, len(outgoing_messages)): # pylint: disable=consider-using-enumerate
+                    if index > 0:
+                        time.sleep(1)
 
-                        outgoing_file = outgoing_file.objects.get(pk=outgoing_file.pk)
+                    message = outgoing_messages[index]
 
-                    file_url = '%s%s' % (settings.SITE_URL, outgoing_file.content_file.url)
+                    if message != '':
+                        msg_args['body'] = message
 
-                    media_urls.append(file_url)
+                    if message == outgoing_messages[-1]:
+                        media_urls = []
 
-                if len(media_urls) > 0: # pylint: disable=len-as-condition
-                    msg_args['media_url'] = media_urls
-                elif len(msg_args.get('body', '')) > 80 and metadata.get('use_mms', True):
-                    msg_args['send_as_mms'] = True
+                        for outgoing_file in outgoing_message.media.all().order_by('index'):
+                            if (outgoing_file.content_type in SUPPORTED_TYPES) is False:
+                                convert_file(outgoing_file)
 
-                twilio_message = client.messages.create(**msg_args)
-                twilio_sids.append(twilio_message.sid)
+                                outgoing_file = outgoing_file.objects.get(pk=outgoing_file.pk)
+
+                            file_url = '%s%s' % (settings.SITE_URL, outgoing_file.content_file.url)
+
+                            media_urls.append(file_url)
+
+                        if len(media_urls) > 0: # pylint: disable=len-as-condition
+                            msg_args['media_url'] = media_urls
+
+                    if len(msg_args.get('body', '')) > 80 and metadata.get('use_mms', True):
+                        msg_args['send_as_mms'] = True
+
+                    twilio_message = client.messages.create(**msg_args)
+                    twilio_sids.append(twilio_message.sid)
 
             metadata['twilio_sid'] = twilio_sids
 
