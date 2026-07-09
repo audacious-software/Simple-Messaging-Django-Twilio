@@ -6,7 +6,6 @@ import logging
 import mimetypes
 import tempfile
 import time
-import traceback
 
 from io import BytesIO
 

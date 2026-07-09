@@ -1,7 +1,7 @@
-# pylint: disable=line-too-long
+# pylint: disable=line-too-long, no-member
 
 from django.conf import settings
-from django.core.checks import Error, register
+from django.core.checks import Error, Warning, register # pylint: disable=redefined-builtin
 
 @register()
 def check_twilio_settings_defined(app_configs, **kwargs): # pylint: disable=unused-argument
@@ -18,6 +18,14 @@ def check_twilio_settings_defined(app_configs, **kwargs): # pylint: disable=unus
 
         if hasattr(settings, 'SIMPLE_MESSAGING_TWILIO_PHONE_NUMBER') is False:
             error = Error('SIMPLE_MESSAGING_TWILIO_PHONE_NUMBER parameter not defined', hint='Update configuration to include SIMPLE_MESSAGING_TWILIO_PHONE_NUMBER.', obj=None, id='simple_messaging_twilio.E003')
+            errors.append(error)
+    else:
+        from simple_messaging_switchboard.models import Channel # pylint: disable=import-outside-toplevel
+
+        count = Channel.objects.filter(channel_type__package_name='simple_messaging_twilio').count()
+
+        if count == 0:
+            error = Warning('simple_messaging_twilio is installed alongside simple_messaging_switchboard, but no Channels are defined.', hint='Create Channel or consider removing simple_messaging_twilio from settings.INSTALLED_APPS', obj=None, id='simple_messaging_twilio.E004')
             errors.append(error)
 
     return errors
