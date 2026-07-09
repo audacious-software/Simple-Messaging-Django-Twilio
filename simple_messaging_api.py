@@ -235,7 +235,7 @@ def process_outgoing_message(outgoing_message, metadata=None): # pylint: disable
 
                         twilio_message = client.messages.create(**msg_args)
                         twilio_sids.append(twilio_message.sid)
-                except:
+                except: # pylint: disable=bare-except
                     traceback.print_exc()
 
             metadata['twilio_sid'] = twilio_sids
