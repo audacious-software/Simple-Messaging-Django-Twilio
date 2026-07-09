@@ -1,5 +1,7 @@
 # pylint: disable=line-too-long, no-member
 
+from django.db.utils import ProgrammingError
+
 from django.conf import settings
 from django.core.checks import Error, Warning, register # pylint: disable=redefined-builtin
 
@@ -20,7 +22,7 @@ def check_twilio_settings_defined(app_configs, **kwargs): # pylint: disable=unus
             error = Error('SIMPLE_MESSAGING_TWILIO_PHONE_NUMBER parameter not defined', hint='Update configuration to include SIMPLE_MESSAGING_TWILIO_PHONE_NUMBER.', obj=None, id='simple_messaging_twilio.E003')
             errors.append(error)
     else:
-        try:        
+        try:
             from simple_messaging_switchboard.models import Channel # pylint: disable=import-outside-toplevel, import-error
 
             count = Channel.objects.filter(channel_type__package_name='simple_messaging_twilio').count()
