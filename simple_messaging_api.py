@@ -191,52 +191,49 @@ def process_outgoing_message(outgoing_message, metadata=None): # pylint: disable
 
                         twilio_sids.append(twilio_message.sid)
             else:
-                try:
-                    outgoing_message_content = outgoing_message.fetch_message(transmission_metadata).strip()
+                outgoing_message_content = outgoing_message.fetch_message(transmission_metadata).strip()
 
-                    msg_args = {
-                        'to': destination,
-                        'from_': twilio_phone_number
-                    }
+                msg_args = {
+                    'to': destination,
+                    'from_': twilio_phone_number
+                }
 
-                    outgoing_messages = [outgoing_message_content]
+                outgoing_messages = [outgoing_message_content]
 
-                    if len(outgoing_message_content) > 1000:
-                        outgoing_messages = split_into_bundles(outgoing_message_content)
-                        metadata['split_messages'] = outgoing_messages
+                if len(outgoing_message_content) > 1000:
+                    outgoing_messages = split_into_bundles(outgoing_message_content)
+                    metadata['split_messages'] = outgoing_messages
 
-                    for index in range(0, len(outgoing_messages)): # pylint: disable=consider-using-enumerate
-                        if index > 0:
-                            time.sleep(1)
+                for index in range(0, len(outgoing_messages)): # pylint: disable=consider-using-enumerate
+                    if index > 0:
+                        time.sleep(1)
 
-                        message = outgoing_messages[index]
+                    message = outgoing_messages[index]
 
-                        if message != '':
-                            msg_args['body'] = message
+                    if message != '':
+                        msg_args['body'] = message
 
-                        if message == outgoing_messages[-1]:
-                            media_urls = []
+                    if message == outgoing_messages[-1]:
+                        media_urls = []
 
-                            for outgoing_file in outgoing_message.media.all().order_by('index'):
-                                if (outgoing_file.content_type in SUPPORTED_TYPES) is False:
-                                    convert_file(outgoing_file)
+                        for outgoing_file in outgoing_message.media.all().order_by('index'):
+                            if (outgoing_file.content_type in SUPPORTED_TYPES) is False:
+                                convert_file(outgoing_file)
 
-                                    outgoing_file = outgoing_file.objects.get(pk=outgoing_file.pk)
+                                outgoing_file = outgoing_file.objects.get(pk=outgoing_file.pk)
 
-                                file_url = '%s%s' % (settings.SITE_URL, outgoing_file.content_file.url)
+                            file_url = '%s%s' % (settings.SITE_URL, outgoing_file.content_file.url)
 
-                                media_urls.append(file_url)
+                            media_urls.append(file_url)
 
-                            if len(media_urls) > 0: # pylint: disable=len-as-condition
-                                msg_args['media_url'] = media_urls
+                        if len(media_urls) > 0: # pylint: disable=len-as-condition
+                            msg_args['media_url'] = media_urls
 
-                        if len(msg_args.get('body', '')) > 80 and metadata.get('use_mms', True):
-                            msg_args['send_as_mms'] = True
+                    if len(msg_args.get('body', '')) > 80 and metadata.get('use_mms', True):
+                        msg_args['send_as_mms'] = True
 
-                        twilio_message = client.messages.create(**msg_args)
-                        twilio_sids.append(twilio_message.sid)
-                except: # pylint: disable=bare-except
-                    traceback.print_exc()
+                    twilio_message = client.messages.create(**msg_args)
+                    twilio_sids.append(twilio_message.sid)
 
             metadata['twilio_sid'] = twilio_sids
 
