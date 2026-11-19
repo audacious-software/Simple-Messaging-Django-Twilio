@@ -525,3 +525,23 @@ def fetch_sync_messages(since): # pylint: disable=too-many-locals
             messages.append(message)
 
     return messages
+
+def create_initial_switchboard_channels(): # pylint: disable=invalid-name
+    from simple_messaging_switchboard.models import Channel, ChannelType  #pylint: disable=import-outside-toplevel, import-error
+
+    twilio_type = ChannelType.objects.filter(package_name='simple_messaging_twilio').first()
+
+    if twilio_type is None:
+        twilio_type = ChannelType.objects.create(name='Twilio', package_name='simple_messaging_twilio')
+
+    twilio_channel = Channel.objects.filter(channel_type=twilio_type).first()
+
+    if twilio_channel is None:
+        config = {
+            'client_id': 'CHANGEME',
+            'auth_token': 'CHANGEME',
+            'phone_number': '+19007202660',
+            'country_code': 'wk'
+        }
+
+        twilio_channel = Channel.objects.create(name='Twilio', identifier='twilio', channel_type=twilio_type, is_enabled=False, configuration=json.dumps(config, indent=2))
