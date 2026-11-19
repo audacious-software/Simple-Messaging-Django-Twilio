@@ -538,8 +538,8 @@ def create_initial_switchboard_channels(): # pylint: disable=invalid-name
 
     if twilio_channel is None:
         config = {
-            'client_id': 'CHANGEME',
-            'auth_token': 'CHANGEME',
+            'client_id': 'CHANGEME', # nosec
+            'auth_token': 'CHANGEME', # nosec
             'phone_number': '+19007202660',
             'country_code': 'wk'
         }
