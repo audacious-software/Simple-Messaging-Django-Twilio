@@ -41,7 +41,7 @@ def check_twilio_channels_defined(app_configs, **kwargs): # pylint: disable=unus
     errors = []
 
     if 'simple_messaging_switchboard' in settings.INSTALLED_APPS: # pylint: disable=too-many-nested-blocks
-        from simple_messaging_switchboard.models import ChannelType, Channel # pylint: disable=import-outside-toplevel
+        from simple_messaging_switchboard.models import ChannelType, Channel # pylint: disable=import-outside-toplevel, import-error
 
         try:
             twilio_type = ChannelType.objects.filter(package_name='simple_messaging_twilio').first()
